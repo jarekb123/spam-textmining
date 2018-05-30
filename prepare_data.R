@@ -25,6 +25,7 @@ prepare_corpus <- function(corpus) {
 
 non_spam <-  Corpus(DirSource("easy_ham", encoding = "UTF-8"), readerControl = list(reader = readMail, language="en"))
 non_spam <- prepare_corpus(non_spam)
+non_spam.TF <- DocumentTermMatrix(non_spam, control = list(weighting = weightTf))
 non_spam.TFIDF <- DocumentTermMatrix(non_spam, control = list(weighting = weightTfIdf))
 non_spam.BIN <- DocumentTermMatrix(non_spam, control = list(weighting = weightBin))
 
@@ -34,7 +35,7 @@ spam <- Corpus(DirSource("spam"), readerControl = list(reader = readMail, langua
 spam <- prepare_corpus(spam)
 spam.TF <- DocumentTermMatrix(spam, control = list(weighting = weightTf))
 spam.TFIDF <- DocumentTermMatrix(spam, control = list(weighting = weightTfIdf))
-
+spam.BIN <- DocumentTermMatrix(spam, control = list(weighting = weightTf))
 # converting to DT Data Frame:
 non_spam.TFIDF.df <- tidy(non_spam.TFIDF)
 spam.TFIDF.df <- tidy(spam.TFIDF)
