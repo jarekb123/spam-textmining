@@ -23,7 +23,11 @@ library(caret)
 if (! "e1071" %in% row.names(installed.packages()))
   install.packages("e1071")
 library(e1071)
+
+if (! "randomForest" %in% row.names(installed.packages()))
+  install.packages("randomForest")
 library(randomForest)
+
 
 spam.dir <- "~/studia/mgr/mow/project/spamassasin/"
 
@@ -117,32 +121,72 @@ for(i in 1: nrow(train.data)) {
   train.test$isContainingHTML[i] <- isContainingHTMLTags(train.test$text[i])
 }
 
+#dtm.tfidf.test <- create_matrix(train.test$text, language = "english", minWordLength = 3, removeNumbers = TRUE, stemWords = TRUE, removePunctuation = TRUE, removeSparseTerms = 0.95, weighting = weightTfIdf)
+##############################################
+# dane do modeli predykcyjnych - TFIDF
+dtm.tfidf <- create_matrix(train.test$text, 
+                           language = "english", 
+                           minWordLength = 3, 
+                           removeNumbers = TRUE, 
+                           stemWords = TRUE, 
+                           removePunctuation = TRUE,
+                           removeSparseTerms = 0.99, 
+                           weighting = weightTfIdf
+)
+data.tfidf <- cbind(train.test, as.matrix(dtm.tfidf))
+names(data.tfidf) <- make.names(names(data.tfidf)) 
 
-matrix <- create_matrix(train.test$text, 
+train.tfidf.DF <- data.tfidf[1:train.num,]
+test.tfidf.DF <- data.tfidf[-(1:train.num),]
+
+train.tfidf.DF$text = NULL
+test.tfidf.DF$text = NULL
+###########################################
+# dane do modeli predykcyjnych - TF
+dtm.tf <- create_matrix(train.test$text, 
                         language = "english", 
                         minWordLength = 3, 
                         removeNumbers = TRUE, 
                         stemWords = TRUE, 
                         removePunctuation = TRUE,
                         removeSparseTerms = 0.99, 
-                        weighting = weightTfIdf
-                        )
-#matrix.test <- create_matrix(train.test$text, language = "english", minWordLength = 3, removeNumbers = TRUE, stemWords = TRUE, removePunctuation = TRUE, removeSparseTerms = 0.95, weighting = weightTfIdf)
+                        weighting = weightTf
+)
+data.tf <- cbind(train.test, as.matrix(dtm.tf))
+names(data.tf) <- make.names(names(data.tf)) 
 
-data <- cbind(train.test, as.matrix(matrix))
-names(data) <- make.names(names(data)) 
+train.tf.DF <- data.tf[1:train.num,]
+test.tf.DF <- data.tf[-(1:train.num),]
 
-train.DF <- data[1:train.num,]
-test.DF <- data[-(1:train.num),]
+train.tf.DF$text = NULL
+test.tf.DF$text = NULL
+########################################
+# binarna reprezentacja - 0 lub 1
+dtm.bin <- create_matrix(train.test$text, 
+                        language = "english", 
+                        minWordLength = 3, 
+                        removeNumbers = TRUE, 
+                        stemWords = TRUE, 
+                        removePunctuation = TRUE,
+                        removeSparseTerms = 0.99, 
+                        weighting = weightBin
+)
+data.bin <- cbind(train.test, as.matrix(dtm.bin))
+names(data.bin) <- make.names(names(data.bin)) 
 
-train.DF$text = NULL
-test.DF$text = NULL
+train.bin.DF <- data.bin[1:train.num,]
+test.bin.DF <- data.bin[-(1:train.num),]
+
+train.bin.DF$text = NULL
+test.bin.DF$text = NULL
 
 
+
+############################################
 # drzewo decyzyjne
-model.tree <- rpart(class~., method="class", data = train.DF)
-pred.tree <- predict(model.tree, test.DF, type = "class")
-table(test.DF$class, pred.tree, dnn=c("Obs", "Pred"))
+model.tree <- rpart(class~., method="class", data = train.tfidf.DF)
+pred.tree <- predict(model.tree, test.tfidf.DF, type = "class")
+table(test.tfidf.DF$class, pred.tree, dnn=c("Obs", "Pred"))
 prp(model.tree)
 
 # selekcja atrybutów
@@ -150,7 +194,7 @@ prp(model.tree)
 varImportance.tree <- varImp(model.tree)
 # varImp z randomForest
 # ref: https://www.r-bloggers.com/variable-importance-plot-and-variable-selection/
-model.rf <- randomForest(class~., data = train.DF)
+model.rf <- randomForest(class~., data = train.tfidf.DF)
 varImportance.rf <- varImp(model.rf)
 
 varImportance.tree.sorted <- data.frame(varImportance.tree, rownames(varImportance.tree))
@@ -158,32 +202,29 @@ varImportance.tree.sorted <- varImportance.tree.sorted[order(-(varImportance.tre
 
 varImportance.rf.sorted <- data.frame(varImportance.rf, rownames(varImportance.rf))
 varImportance.rf.sorted <- varImportance.rf.sorted[order(-(varImportance.rf.sorted$Overall)),]
-#
+
 
 # model po selekcji 25 atrybutów z randomForest
 words <- rownames(varImportance.rf.sorted)[1:25]
 fmla <- as.formula(paste("class ~ ", paste(words, collapse = "+")))
 
-model.tree.25 <- rpart(fmla, data=train.DF)
+model.tree.25 <- rpart(fmla, data=train.tfidf.DF)
 prp(model.tree.25)
-pred.tree.25 <- predict(model.tree.25, test.DF, type="class")
-table(test.DF$class, pred.tree.25, dnn=c("Obs", "Pred"))
+pred.tree.25 <- predict(model.tree.25, test.tfidf.DF, type="class")
+table(test.tfidf.DF$class, pred.tree.25, dnn=c("Obs", "Pred"))
 
-model.tree.cp <- rpart(class~., data=train.DF, cp = 0.02, minbucket = 30)
-pred.tree.cp <- predict(model.tree.cp, test.DF, type = "class")
-table(test.DF$class, pred.tree.cp, dnn=c("Obs", "Pred"))
+
+model.tree.cp <- rpart(class~., data=train.tfidf.DF, cp = 0.02, minbucket = 30)
+pred.tree.cp <- predict(model.tree.cp, test.tfidf.DF, type = "class")
+table(test.tfidf.DF$class, pred.tree.cp, dnn=c("Obs", "Pred"))
 prp(model.tree.cp)
 
 # klasyfikator Bayesa
-model.bayes <- naiveBayes(class~., data = train.DF)
-pred.bayes <- predict(model.bayes, test.DF, type = "class")
-table(pred = pred.bayes, true = test.DF$class, dnn=c("Obs", "Pred"))
+model.bayes <- naiveBayes(class~., data = train.tfidf.DF)
+pred.bayes <- predict(model.bayes, test.tfidf.DF, type = "class")
+table(pred = pred.bayes, true = test.tfidf.DF$class, dnn=c("Obs", "Pred"))
 
 # svm
-model.svm <- svm(class~., data = train.DF)
-pred.svm <- predict(model.svm, test.DF)
-table.svm <- table(pred = pred.svm, ALabels = test.DF$class, dnn=c("Obs", "Pred"))
-
-
-
-model.tree$variable.importance
+model.svm <- svm(class~., data = train.tfidf.DF)
+pred.svm <- predict(model.svm, test.tfidf.DF)
+table.svm <- table(pred = pred.svm, ALabels = test.tfidf.DF$class, dnn=c("Obs", "Pred"))
