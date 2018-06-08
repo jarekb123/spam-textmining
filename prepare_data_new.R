@@ -228,3 +228,26 @@ table(pred = pred.bayes, true = test.tfidf.DF$class, dnn=c("Obs", "Pred"))
 model.svm <- svm(class~., data = train.tfidf.DF)
 pred.svm <- predict(model.svm, test.tfidf.DF)
 table.svm <- table(pred = pred.svm, ALabels = test.tfidf.DF$class, dnn=c("Obs", "Pred"))
+#################################
+
+# eksperymenty związane z różną reprezentacją danych
+# tree
+bin.model.tree <- rpart(class~., method="class", data = train.bin.DF)
+bin.pred.tree <- predict(bin.model.tree, test.bin.DF, type="class")
+table(test.bin.DF$class, bin.pred.tree, dnn=c("Obs", "Pred"))
+prp(bin.model.tree)
+
+# ponizej tabela dla TREE (wszystkie argumenty, TF-IDF, )
+      #Pred
+#Obs     ham spam
+#ham  1338   62
+#spam  599  798
+
+# ponizej tabela dla TREE (wszystkie argumenty, BIN, )
+      #Pred
+#Obs     ham spam
+#ham  1348   52
+#spam  538  859
+
+# wniosek: zmiana reprezentacji na binarna polepszyło nieznacznie model predykcyjny
+# drzewa, widac ze mniej maili 'ham' zostalo rozpoznanych jako 'spam'
