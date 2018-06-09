@@ -68,6 +68,23 @@ decision_tree_max_depths_tests <- function(k, emails, words, max_depths,
                                                                           max_depth, min_split,
                                                                           features_number))})
   results <- do.call("rbind", results)
-  plot(results[,1], xlab = 'Max depth', result[, 4], ylab = 'Error')
+  plot(results[,1], xlab = 'Max depth', results[, 7], ylab = 'Error')
+  return(results)
+}
+
+decision_tree_min_splits_tests <- function(k, emails, words, max_depth, 
+                                           min_splits, features_number=200) {
+  results = data.frame(matrix(ncol = 7, nrow = 0))
+  colnames(results) <- c('max_depth', 'min_split', 'true_ham', 'false_ham',
+                         'true_spam', 'false_spam', 'classification_error')
+  
+  cores_number <- detectCores() - 1
+  cluster <- makeCluster(cores_number, type="FORK")
+  #clusterExport(cl=cl, varlist=c("features_number"))
+  results <- parLapply(cluster, min_splits, function(min_split) {return(decision_tree_experiment(k, emails, words, 
+                                                                                                 max_depth, min_split,
+                                                                                                 features_number))})
+  results <- do.call("rbind", results)
+  plot(results[,2], xlab = 'Min split', results[, 7], ylab = 'Error')
   return(results)
 }
