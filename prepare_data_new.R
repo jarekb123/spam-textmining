@@ -14,6 +14,9 @@ library(rpart.plot)
 if (! "maptree" %in% row.names(installed.packages()))
   install.packages("maptree")
 library(maptree)
+if (! "CORElearn" %in% row.names(installed.packages()))
+  install.packages("CORElearn")
+library(CORElearn)
 
 # confusionMatrix - TP rate, itp.
 if (! "caret" %in% row.names(installed.packages()))
@@ -29,7 +32,7 @@ if (! "randomForest" %in% row.names(installed.packages()))
 library(randomForest)
 
 
-spam.dir <- "~/studia/mgr/mow/project/spamassasin/"
+spam.dir <- "./spamassasin/"
 
 get.msg <- function(path.dir) {
   con <- file(path.dir, open="rt", encoding = "latin1")
@@ -124,11 +127,14 @@ for(i in 1: nrow(train.data)) {
 #dtm.tfidf.test <- create_matrix(train.test$text, language = "english", minWordLength = 3, removeNumbers = TRUE, stemWords = TRUE, removePunctuation = TRUE, removeSparseTerms = 0.95, weighting = weightTfIdf)
 ##############################################
 # dane do modeli predykcyjnych - TFIDF
+
 dtm.tfidf <- create_matrix(train.test$text, 
                            language = "english", 
-                           minWordLength = 3, 
-                           removeNumbers = TRUE, 
-                           stemWords = TRUE, 
+                           minWordLength = 3,
+                           toLower = TRUE,
+                           removeStopwords = TRUE,
+                           removeNumbers = TRUE,
+                           stemWords = TRUE,
                            removePunctuation = TRUE,
                            removeSparseTerms = 0.99, 
                            weighting = weightTfIdf
@@ -145,11 +151,13 @@ test.tfidf.DF$text = NULL
 # dane do modeli predykcyjnych - TF
 dtm.tf <- create_matrix(train.test$text, 
                         language = "english", 
-                        minWordLength = 3, 
-                        removeNumbers = TRUE, 
-                        stemWords = TRUE, 
+                        minWordLength = 3,
+                        toLower = TRUE,
+                        removeStopwords = TRUE,
+                        removeNumbers = TRUE,
+                        stemWords = TRUE,
                         removePunctuation = TRUE,
-                        removeSparseTerms = 0.99, 
+                        removeSparseTerms = 0.99,
                         weighting = weightTf
 )
 data.tf <- cbind(train.test, as.matrix(dtm.tf))
@@ -162,13 +170,15 @@ train.tf.DF$text = NULL
 test.tf.DF$text = NULL
 ########################################
 # binarna reprezentacja - 0 lub 1
-dtm.bin <- create_matrix(train.test$text, 
-                        language = "english", 
-                        minWordLength = 3, 
-                        removeNumbers = TRUE, 
-                        stemWords = TRUE, 
+dtm.bin <- create_matrix(train.test$text,
+                        language = "english",
+                        minWordLength = 3,
+                        toLower = TRUE,
+                        removeStopwords = TRUE,
+                        removeNumbers = TRUE,
+                        stemWords = TRUE,
                         removePunctuation = TRUE,
-                        removeSparseTerms = 0.99, 
+                        removeSparseTerms = 0.99,
                         weighting = weightBin
 )
 data.bin <- cbind(train.test, as.matrix(dtm.bin))
@@ -184,25 +194,41 @@ test.bin.DF$text = NULL
 
 ############################################
 # drzewo decyzyjne
-model.tree <- rpart(class~., method="class", data = train.tfidf.DF)
-pred.tree <- predict(model.tree, test.tfidf.DF, type = "class")
-table(test.tfidf.DF$class, pred.tree, dnn=c("Obs", "Pred"))
-prp(model.tree)
+#model.tree <- rpart(class~., method="class", data = train.tfidf.DF)
+#pred.tree <- predict(model.tree, test.tfidf.DF, type = "class")
+#table(test.tfidf.DF$class, pred.tree, dnn=c("Obs", "Pred"))
+#prp(model.tree)
 
 # selekcja atrybutów
 # variable importance z drzewa decyzyjnego
-varImportance.tree <- varImp(model.tree)
+#varImportance.tree <- varImp(model.tree)
 # varImp z randomForest
 # ref: https://www.r-bloggers.com/variable-importance-plot-and-variable-selection/
-model.rf <- randomForest(class~., data = train.tfidf.DF)
-varImportance.rf <- varImp(model.rf)
+#model.rf <- randomForest(class~., data = train.tfidf.DF)
+#varImportance.rf <- varImp(model.rf)
 
-varImportance.tree.sorted <- data.frame(varImportance.tree, rownames(varImportance.tree))
-varImportance.tree.sorted <- varImportance.tree.sorted[order(-(varImportance.tree.sorted$Overall)),]
+#varImportance.tree.sorted <- data.frame(varImportance.tree, rownames(varImportance.tree))
+#varImportance.tree.sorted <- varImportance.tree.sorted[order(-(varImportance.tree.sorted$Overall)),]
 
-varImportance.rf.sorted <- data.frame(varImportance.rf, rownames(varImportance.rf))
-varImportance.rf.sorted <- varImportance.rf.sorted[order(-(varImportance.rf.sorted$Overall)),]
+#varImportance.rf.sorted <- data.frame(varImportance.rf, rownames(varImportance.rf))
+#varImportance.rf.sorted <- varImportance.rf.sorted[order(-(varImportance.rf.sorted$Overall)),]
 
+varImportance.tfidf <- attrEval(class~., train.tfidf.DF, estimator="Gini")
+varImportance.tfidf <- data.frame(varImportance.tfidf, names(varImportance.tfidf))
+names(varImportance.tfidf) <- c("importance", "term")
+varImportance.tfidf.decreasing <- varImportance.tfidf[order(varImportance.tfidf$importance, decreasing = TRUE),]
+
+varImportance.tf <- attrEval(class~., train.tf.DF, estimator="Gini")
+varImportance.tf <- data.frame(varImportance.tf, names(varImportance.tf))
+names(varImportance.tf) <- c("importance", "term")
+varImportance.tf.decreasing <- varImportance.tf[order(varImportance.tf$importance, decreasing = TRUE),]
+
+varImportance.bin <- attrEval(class~., train.bin.DF, estimator="Gini")
+varImportance.bin <- data.frame(varImportance.bin, names(varImportance.bin))
+names(varImportance.bin) <- c("importance", "term")
+varImportance.bin.decreasing <- varImportance.bin[order(varImportance.bin$importance, decreasing = TRUE),]
+
+###############################
 
 # model po selekcji 25 atrybutów z randomForest
 words <- rownames(varImportance.rf.sorted)[1:25]
