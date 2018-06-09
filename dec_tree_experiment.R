@@ -1,6 +1,9 @@
 if (! "dismo" %in% row.names(installed.packages()))
   install.packages("dismo")
 library(dismo)
+if (! "parallel" %in% row.names(installed.packages()))
+  install.packages("parallel")
+library(parallel)
 
 
 decision_tree_experiment <- function(k, emails, words, max_depth, min_split, features_number=200) {
@@ -32,4 +35,39 @@ decision_tree_experiment <- function(k, emails, words, max_depth, min_split, fea
   }
   result <- colMeans(result)
   return(result)
+}
+
+decision_tree_grid_search_tests <- function(k, emails, words, max_depths, 
+                                                      min_splits, features_number=200) {
+  results = data.frame(matrix(ncol = 7, nrow = 0))
+  colnames(results) <- c('max_depth', 'min_split', 'true_ham', 'false_ham',
+                         'true_spam', 'false_spam', 'classification_error')
+  
+  cores_number <- detectCores() - 1
+  cluster <- makeCluster(cores_number, type="FORK")
+  args <- expand.grid(max_depths, min_splits)
+  #args.list <- split(args, seq(nrow(args)))
+  results <- mcmapply(function(max_depth, min_split) {return(decision_tree_experiment(k, emails, words, 
+                                                                                      max_depth, min_split,
+                                                                                      features_number))},
+                      as.list(args[, 1]), as.list(args[, 2]), mc.cores = cores_number)
+  results <- data.frame(t(results))
+  #plot(results[,1], xlab = 'Max depth', result[, 4], ylab = 'Error')
+  return(results)
+}
+
+decision_tree_max_depths_tests <- function(k, emails, words, max_depths, 
+                                           min_split, features_number=200) {
+  results = data.frame(matrix(ncol = 7, nrow = 0))
+  colnames(results) <- c('max_depth', 'min_split', 'true_ham', 'false_ham',
+                         'true_spam', 'false_spam', 'classification_error')
+
+  cores_number <- detectCores() - 1
+  cluster <- makeCluster(cores_number, type="FORK")
+  results <- parLapply(cluster, max_depths, function(max_depth) {return(decision_tree_experiment(k, emails, words, 
+                                                                          max_depth, min_split,
+                                                                          features_number))})
+  results <- do.call("rbind", results)
+  plot(results[,1], xlab = 'Max depth', result[, 4], ylab = 'Error')
+  return(results)
 }
