@@ -144,6 +144,7 @@ names(data.tfidf) <- make.names(names(data.tfidf))
 
 train.tfidf.DF <- data.tfidf[1:train.num,]
 test.tfidf.DF <- data.tfidf[-(1:train.num),]
+data.tfidf$text <- NULL
 
 train.tfidf.DF$text = NULL
 test.tfidf.DF$text = NULL
@@ -168,6 +169,8 @@ test.tf.DF <- data.tf[-(1:train.num),]
 
 train.tf.DF$text = NULL
 test.tf.DF$text = NULL
+data.tf$text <- NULL
+
 ########################################
 # binarna reprezentacja - 0 lub 1
 dtm.bin <- create_matrix(train.test$text,
@@ -189,6 +192,7 @@ test.bin.DF <- data.bin[-(1:train.num),]
 
 train.bin.DF$text = NULL
 test.bin.DF$text = NULL
+data.bin$text <- NULL
 
 
 
@@ -231,14 +235,15 @@ varImportance.bin.decreasing <- varImportance.bin[order(varImportance.bin$import
 ###############################
 
 # model po selekcji 25 atrybutów z randomForest
-words <- rownames(varImportance.rf.sorted)[1:25]
+words <- rownames(varImportance.tfidf.decreasing)[1:200]
 fmla <- as.formula(paste("class ~ ", paste(words, collapse = "+")))
 
-model.tree.25 <- rpart(fmla, data=train.tfidf.DF)
+model.tree.25 <- rpart(fmla, data=train.tfidf.DF, minsplit = 3, maxdepth = 15)
 prp(model.tree.25)
 pred.tree.25 <- predict(model.tree.25, test.tfidf.DF, type="class")
-table(test.tfidf.DF$class, pred.tree.25, dnn=c("Obs", "Pred"))
+mytable <-table(test.tfidf.DF$class, pred.tree.25, dnn=c("Obs", "Pred"))
 
+#classification_error <- sum(pred.tree.25 != test.tfidf.DF$class) / NROW(pred.tree.25)
 
 model.tree.cp <- rpart(class~., data=train.tfidf.DF, cp = 0.02, minbucket = 30)
 pred.tree.cp <- predict(model.tree.cp, test.tfidf.DF, type = "class")
