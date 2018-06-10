@@ -278,6 +278,8 @@ pred.svm <- predict(model.svm, test.bin.DF, type = "email_class")
 table.svm <- table(test.bin.DF$email_class, pred.svm, dnn=c("Obs", "Pred"))
 
 results_svm <- svm_experiment(2, data.tfidf.selected_features[1:1000,], 'linear', NA, 1, 10)
+results_svm <- svm_rbf_gamma_tests(2, data.tfidf.selected_features[1:1000,], c(0.05))
+results_svm <- svm_polynomial_degree_tests(2, data.tfidf.selected_features[1:1000,], c(2, 3))
 #################################
 
 # eksperymenty związane z różną reprezentacją danych
