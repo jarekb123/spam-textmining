@@ -276,6 +276,8 @@ table(pred = pred.bayes, true = test.tfidf.DF$email_class, dnn=c("Obs", "Pred"))
 model.svm <- svm(email_class ~ ., data = train.bin.DF)
 pred.svm <- predict(model.svm, test.bin.DF, type = "email_class")
 table.svm <- table(test.bin.DF$email_class, pred.svm, dnn=c("Obs", "Pred"))
+
+results_svm <- svm_experiment(2, data.tfidf.selected_features[1:1000,], 'linear', NA, 1, 10)
 #################################
 
 # eksperymenty związane z różną reprezentacją danych
