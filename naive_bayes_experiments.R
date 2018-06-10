@@ -48,3 +48,15 @@ naive_bayes_experiment <- function(k, emails, ham_as_spam_cost = 1, spam_as_ham_
   return(result)
 }
 
+naive_bayes_misclassification_costs_tests <- function(k, emails,
+                                                      spam_as_ham_cost_to_ham_as_spam_ratio) {
+  cores_number <- detectCores() - 1
+  cluster <- makeCluster(cores_number, type="FORK")
+  results <- parLapply(cluster, spam_as_ham_cost_to_ham_as_spam_ratio, function(ratio) 
+    {return(naive_bayes_experiment(k, emails, ham_as_spam_cost = 1,
+                                   spam_as_ham_cost = ratio))})
+  results <- do.call("rbind", results)
+  plot(results[,1], xlab = 'Spam as ham to ham as spam cost ratio', results[, 8],
+       ylab = 'Error')
+  return(results)
+}
