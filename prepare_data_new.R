@@ -97,16 +97,16 @@ names(hard_ham.df) <- c("text", "class")
 names(spam_2.df) <- c("text", "class")
 names(spam.df) <- c("text", "class")
 
-train.data <- rbind(easy_ham.df, hard_ham.df, spam.df)
-train.num <- nrow(train.data)
-train.test <- rbind(train.data, easy_ham_2.df, spam_2.df)
-names(train.data) <- c("text", "class")
+email.data <- rbind(easy_ham.df, hard_ham.df, spam.df,
+                    easy_ham_2.df, spam_2.df)
+## 80% of the sample size
+train_size <- floor(0.80 * nrow(email.data))
 
+## set the seed to make your partition reproducible
+set.seed(12345)
+train_ind <- sample(seq_len(nrow(email.data)), size = train_size)
 
-
-set.seed(1000)
-train_out.data <- train.data$class
-train_text.data <- train.data$text
+names(email.data) <- c("text", "class")
 
 removeHTMLAttr <- function(x) {
   x <- gsub(pattern = "(<\\w+)[^>]*(>)", "\\1\\2", x) # usuwanie atrybutow w tagach HTML
@@ -119,16 +119,16 @@ isContainingHTMLTags <- function(x) {
   return(grepl("<[^>]+>", x))
 }
 
-for(i in 1: nrow(train.data)) {
-  train.test$text[i] <- removeHTMLClosingTag(removeHTMLAttr(train.test$text[i]))
-  train.test$isContainingHTML[i] <- isContainingHTMLTags(train.test$text[i])
+for(i in 1: nrow(email.data)) {
+  email.data$text[i] <- removeHTMLClosingTag(removeHTMLAttr(train.test$text[i]))
+  email.data$isContainingHTML[i] <- isContainingHTMLTags(train.test$text[i])
 }
 
 #dtm.tfidf.test <- create_matrix(train.test$text, language = "english", minWordLength = 3, removeNumbers = TRUE, stemWords = TRUE, removePunctuation = TRUE, removeSparseTerms = 0.95, weighting = weightTfIdf)
 ##############################################
 # dane do modeli predykcyjnych - TFIDF
 
-dtm.tfidf <- create_matrix(train.test$text, 
+dtm.tfidf <- create_matrix(email.data$text, 
                            language = "english", 
                            minWordLength = 3,
                            toLower = TRUE,
@@ -139,18 +139,18 @@ dtm.tfidf <- create_matrix(train.test$text,
                            removeSparseTerms = 0.99, 
                            weighting = weightTfIdf
 )
-data.tfidf <- cbind(train.test, as.matrix(dtm.tfidf))
+data.tfidf <- cbind(email.data, as.matrix(dtm.tfidf))
 names(data.tfidf) <- make.names(names(data.tfidf)) 
 
-train.tfidf.DF <- data.tfidf[1:train.num,]
-test.tfidf.DF <- data.tfidf[-(1:train.num),]
+train.tfidf.DF <- data.tfidf[train_ind,]
+test.tfidf.DF <- data.tfidf[-train_ind,]
 data.tfidf$text <- NULL
 
 train.tfidf.DF$text = NULL
 test.tfidf.DF$text = NULL
 ###########################################
 # dane do modeli predykcyjnych - TF
-dtm.tf <- create_matrix(train.test$text, 
+dtm.tf <- create_matrix(email.data$text, 
                         language = "english", 
                         minWordLength = 3,
                         toLower = TRUE,
@@ -161,11 +161,11 @@ dtm.tf <- create_matrix(train.test$text,
                         removeSparseTerms = 0.99,
                         weighting = weightTf
 )
-data.tf <- cbind(train.test, as.matrix(dtm.tf))
+data.tf <- cbind(email.data, as.matrix(dtm.tf))
 names(data.tf) <- make.names(names(data.tf)) 
 
-train.tf.DF <- data.tf[1:train.num,]
-test.tf.DF <- data.tf[-(1:train.num),]
+train.tf.DF <- data.tf[train_ind,]
+test.tf.DF <- data.tf[-train_ind,]
 
 train.tf.DF$text = NULL
 test.tf.DF$text = NULL
@@ -173,7 +173,7 @@ data.tf$text <- NULL
 
 ########################################
 # binarna reprezentacja - 0 lub 1
-dtm.bin <- create_matrix(train.test$text,
+dtm.bin <- create_matrix(email.data$text,
                         language = "english",
                         minWordLength = 3,
                         toLower = TRUE,
@@ -184,39 +184,18 @@ dtm.bin <- create_matrix(train.test$text,
                         removeSparseTerms = 0.99,
                         weighting = weightBin
 )
-data.bin <- cbind(train.test, as.matrix(dtm.bin))
+data.bin <- cbind(email.data, as.matrix(dtm.bin))
 names(data.bin) <- make.names(names(data.bin)) 
 
-train.bin.DF <- data.bin[1:train.num,]
-test.bin.DF <- data.bin[-(1:train.num),]
+train.bin.DF <- data.bin[train_ind,]
+test.bin.DF <- data.bin[-train_ind,]
 
 train.bin.DF$text = NULL
 test.bin.DF$text = NULL
 data.bin$text <- NULL
 
-
-
 ############################################
-# drzewo decyzyjne
-#model.tree <- rpart(class~., method="class", data = train.tfidf.DF)
-#pred.tree <- predict(model.tree, test.tfidf.DF, type = "class")
-#table(test.tfidf.DF$class, pred.tree, dnn=c("Obs", "Pred"))
-#prp(model.tree)
-
 # selekcja atrybutów
-# variable importance z drzewa decyzyjnego
-#varImportance.tree <- varImp(model.tree)
-# varImp z randomForest
-# ref: https://www.r-bloggers.com/variable-importance-plot-and-variable-selection/
-#model.rf <- randomForest(class~., data = train.tfidf.DF)
-#varImportance.rf <- varImp(model.rf)
-
-#varImportance.tree.sorted <- data.frame(varImportance.tree, rownames(varImportance.tree))
-#varImportance.tree.sorted <- varImportance.tree.sorted[order(-(varImportance.tree.sorted$Overall)),]
-
-#varImportance.rf.sorted <- data.frame(varImportance.rf, rownames(varImportance.rf))
-#varImportance.rf.sorted <- varImportance.rf.sorted[order(-(varImportance.rf.sorted$Overall)),]
-
 varImportance.tfidf <- attrEval(class~., train.tfidf.DF, estimator="Gini")
 varImportance.tfidf <- data.frame(varImportance.tfidf, names(varImportance.tfidf))
 names(varImportance.tfidf) <- c("importance", "term")
@@ -256,9 +235,9 @@ pred.bayes <- predict(model.bayes, test.tfidf.DF, type = "class")
 table(pred = pred.bayes, true = test.tfidf.DF$class, dnn=c("Obs", "Pred"))
 
 # svm
-model.svm <- svm(class~., data = train.tfidf.DF)
-pred.svm <- predict(model.svm, test.tfidf.DF)
-table.svm <- table(pred = pred.svm, ALabels = test.tfidf.DF$class, dnn=c("Obs", "Pred"))
+model.svm <- svm(class ~ ., data = train.bin.DF)
+pred.svm <- predict(model.svm, test.bin.DF, type = "class")
+table.svm <- table(test.bin.DF$class, pred.svm, dnn=c("Obs", "Pred"))
 #################################
 
 # eksperymenty związane z różną reprezentacją danych
