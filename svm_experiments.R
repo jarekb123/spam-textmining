@@ -61,6 +61,6 @@ svm_polynomial_degree_tests <- function(k, emails, degrees) {
   {return(svm_experiment(k, emails, "polynomial", 0, degree,
                          1))})
   results <- do.call("rbind", results)
-  plot(results[,1], xlab = 'Polynomial degree', results[, 8], ylab = 'Error')
+  plot(results[,2], xlab = 'Polynomial degree', results[, 8], ylab = 'Error')
   return(results)
 }

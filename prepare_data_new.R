@@ -268,9 +268,9 @@ results <- decision_tree_grid_search_tests(5, data.tfidf.selected_features, word
                                            c(5))
 
 # klasyfikator Bayesa
-model.bayes <- naiveBayes(email_class~., data = train.tfidf.DF)
-pred.bayes <- predict(model.bayes, test.tfidf.DF, type = "email_class")
-table(pred = pred.bayes, true = test.tfidf.DF$email_class, dnn=c("Obs", "Pred"))
+model.bayes <- naiveBayes(email_class~., data = train.tfidf.DF.selected_features, laplace = 3)
+pred.bayes <- predict(model.bayes, test.tfidf.DF.selected_features, type = "raw")
+table(pred = pred.bayes, true = test.tfidf.DF.selected_features$email_class, dnn=c("Obs", "Pred"))
 
 # svm
 model.svm <- svm(email_class ~ ., data = train.bin.DF)
