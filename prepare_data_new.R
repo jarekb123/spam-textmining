@@ -205,6 +205,7 @@ names(varImportance.tfidf) <- c("importance", "term")
 varImportance.tfidf.decreasing <- varImportance.tfidf[order(varImportance.tfidf$importance, decreasing = TRUE),]
 varImportance.tfidf.decreasing.columns <- order(varImportance.tfidf$importance, decreasing = TRUE)[1:features_num]
 data.tfidf.selected_features <- data.tfidf[, varImportance.tfidf.decreasing.columns[1:features_num] + 1]
+data.tfidf.selected_features$email_class <- data.tfidf$email_class
 
 #TODO: remove train & test after tests
 train.tfidf.DF.selected_features <- train.tfidf.DF[, varImportance.tfidf.decreasing.columns[1:features_num] + 1]
@@ -219,6 +220,7 @@ names(varImportance.tf) <- c("importance", "term")
 varImportance.tf.decreasing <- varImportance.tf[order(varImportance.tf$importance, decreasing = TRUE),]
 varImportance.tf.decreasing.columns <- order(varImportance.tf$importance, decreasing = TRUE)[1:features_num]
 data.tf.selected_features <- data.tf[, varImportance.tf.decreasing.columns[1:features_num] + 1]
+data.tf.selected_features$email_class <- data.tf$email_class
 #TODO: remove train & test after tests
 
 train.tf.DF.selected_features <- train.tf.DF[, varImportance.tf.decreasing.columns[1:features_num] + 1]
@@ -233,6 +235,8 @@ names(varImportance.bin) <- c("importance", "term")
 varImportance.bin.decreasing <- varImportance.bin[order(varImportance.bin$importance, decreasing = TRUE),]
 varImportance.bin.decreasing.columns <- order(varImportance.bin$importance, decreasing = TRUE)[1:features_num]
 data.bin.selected_features <- data.bin[, varImportance.bin.decreasing.columns[1:features_num] + 1]
+data.bin.selected_features$email_class <- data.bin$email_class
+
 #TODO: remove train & test after tests
 
 train.bin.DF.selected_features <- train.bin.DF[, varImportance.bin.decreasing.columns[1:features_num] + 1]
@@ -259,6 +263,9 @@ model.tree.cp <- rpart(email_class~., data=train.tfidf.DF, cp = 0.02, minbucket 
 pred.tree.cp <- predict(model.tree.cp, test.tfidf.DF, type = "email_class")
 table(test.tfidf.DF$email_class, pred.tree.cp, dnn=c("Obs", "Pred"))
 prp(model.tree.cp)
+
+results <- decision_tree_grid_search_tests(5, data.tfidf.selected_features, words, c(5), 
+                                           c(5))
 
 # klasyfikator Bayesa
 model.bayes <- naiveBayes(email_class~., data = train.tfidf.DF)
