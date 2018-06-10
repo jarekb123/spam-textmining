@@ -219,7 +219,7 @@ varImportance.bin <- data.frame(varImportance.bin, names(varImportance.bin))
 names(varImportance.bin) <- c("importance", "term")
 varImportance.bin.decreasing <- varImportance.bin[order(varImportance.bin$importance, decreasing = TRUE),]
 varImportance.bin.decreasing.columns <- order(varImportance.bin$importance, decreasing = TRUE)[1:features_num]
-train.tf.DF.selected_features <- train.bin.DF[, varImportance.bin.decreasing.columns[1:features_num] + 1]
+train.bin.DF.selected_features <- train.bin.DF[, varImportance.bin.decreasing.columns[1:features_num] + 1]
 
 ###############################
 
