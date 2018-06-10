@@ -338,6 +338,22 @@ results_svm_tf_gammas <- svm_rbf_gamma_tests(5, data.tf.selected_features,
 results_svm_bin_gammas <- svm_rbf_gamma_tests(5, data.bin.selected_features,
                                                  c(0.001, 0.005, 0.01, 0.025, 0.05))
 
+plot(results_svm_tf_idf_gammas[, 1],
+     results_svm_tf_idf_gammas[, 8],
+     log='x', col='red', 
+     ylim=range(0.01, 0.11),
+     xlim=range(0.001, 0.05),
+     ylab = 'Błąd klasyfikacji',
+     xlab="Paramter gamma jądra w postaci radialnej funkcji bazowej",
+     mgp = c(3, 0.1, 0))
+points(results_svm_tf_gammas[, 1], 
+       results_svm_tf_gammas[, 8], col='green')
+points(results_svm_bin_gammas[, 1],
+       results_svm_bin_gammas[, 8], col='black')
+legend('bottomleft', legend=c("tf-idf", "tf", "binarna"),
+       col=c("red", "green", "black"), pch=c(1, 1, 1), xjust = 0,
+       title="Reprezentacja tekstu")
+
 
 results_svm_tf_idf_polynomial <- svm_polynomial_degree_tests(5, data.tfidf.selected_features,
                                            c(1, 2, 3))
@@ -348,6 +364,22 @@ results_svm_tf_polynomial <- svm_polynomial_degree_tests(5, data.tf.selected_fea
 results_svm_bin_polynomial <- svm_polynomial_degree_tests(5, data.bin.selected_features,
                                                              c(1, 2, 3))
 
+plot(results_svm_tf_idf_polynomial[, 2],
+     results_svm_tf_idf_polynomial[, 8],
+     col='red', 
+     ylim=range(0.01, 0.19),
+     xlim=range(1, 3),
+     ylab = 'Błąd klasyfikacji',
+     xlab="Stopień wielomianu jądra wielomianowego",
+     mgp = c(3, 0.1, 0))
+points(results_svm_tf_polynomial[, 2], 
+       results_svm_tf_polynomial[, 8], col='green')
+points(results_svm_bin_polynomial[, 2],
+       results_svm_bin_polynomial[, 8], col='black')
+legend('bottomleft', legend=c("tf-idf", "tf", "binarna"),
+       col=c("red", "green", "black"), pch=c(1, 1, 1), xjust = 0,
+       title="Reprezentacja tekstu")
+
 results_svm_tf_idf_rbf_cost <- svm_cost_rbf_tests(5, data.tfidf.selected_features, 0.005,
                                               c(0.1, 1, 10, 100))
 
@@ -356,6 +388,21 @@ results_svm_tf_rbf_cost <- svm_cost_rbf_tests(5, data.tf.selected_features, 0.00
 
 results_svm_bin_rbf_cost <- svm_cost_rbf_tests(5, data.bin.selected_features, 0.005,
                                                   c(0.1, 1, 10, 100))
+plot(results_svm_tf_idf_rbf_cost[, 3],
+     results_svm_tf_idf_rbf_cost[, 8],
+     log='x', col='red', 
+     ylim=range(0.01, 0.11),
+     xlim=range(0.1, 100),
+     ylab = 'Błąd klasyfikacji',
+     xlab="Koszt naruszenia marginesu funkcji decyzyjnej",
+     mgp = c(3, 0.1, 0))
+points(results_svm_tf_rbf_cost[, 3], 
+       results_svm_tf_rbf_cost[, 8], col='green')
+points(results_svm_bin_rbf_cost[, 3],
+       results_svm_bin_rbf_cost[, 8], col='black')
+legend('bottomleft', legend=c("tf-idf", "tf", "binarna"),
+       col=c("red", "green", "black"), pch=c(1, 1, 1), xjust = 0,
+       title="Reprezentacja tekstu")
 
 
 
