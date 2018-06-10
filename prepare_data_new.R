@@ -290,7 +290,43 @@ tree_results_tf <- decision_tree_grid_search_tests(5, data.tf.selected_features,
 tree_results_bin <- decision_tree_grid_search_tests(5, data.bin.selected_features, 
                                                        c(1, 5, 10, 15), 
                                                        c(1, 5, 10, 25, 50))
+tree_y_range <- range(tree_results_bin[tree_results_tf_idf[,2] == 5, 7], 
+                       tree_results_tf[tree_results_tf_idf[,2] == 5, 7],
+                       tree_results_tf_idf[tree_results_tf_idf[,2] == 5, 7])
+plot(tree_results_tf_idf[tree_results_tf_idf[,2] == 5, 1],
+     tree_results_tf_idf[tree_results_tf_idf[,2] == 5, 7],
+     log='x', col='red', 
+     ylim=range(0.075, 0.085),
+     xlim=range(4.8, 15.2),
+     ylab = 'Błąd klasyfikacji',
+     xlab="Maksymalna głębokość drzewa",
+     mgp = c(3, 0.1, 0))
+points(tree_results_tf[tree_results_tf[,2] == 5, 1], 
+       tree_results_tf[tree_results_tf[,2] == 5, 7], col='green')
+points(tree_results_bin[tree_results_bin[,2] == 5, 1],
+       tree_results_bin[tree_results_bin[,2] == 5, 7], col='black')
+legend('bottomleft', legend=c("tf-idf", "tf", "binarna"),
+       col=c("red", "green", "black"), pch=c(1, 1, 1), xjust = 0,
+       title="Reprezentacja tekstu")
 
+tree_y_range <- range(tree_results_bin[tree_results_tf_idf[,1] == 10, 7], 
+                      tree_results_tf[tree_results_tf_idf[,1] == 10, 7],
+                      tree_results_tf_idf[tree_results_tf_idf[,1] == 10, 7])
+plot(tree_results_tf_idf[tree_results_tf_idf[,1] == 10, 2],
+     tree_results_tf_idf[tree_results_tf_idf[,1] == 10, 7],
+     log='x', col='red', 
+     ylim=range(0.075, 0.09),
+     xlim=range(1.0, 51.0),
+     ylab = 'Błąd klasyfikacji',
+     xlab="Minimalny rozmiar podziału",
+     mgp = c(3, 0.1, 0))
+points(tree_results_tf[tree_results_tf[,1] == 10, 2], 
+       tree_results_tf[tree_results_tf[,1] == 10, 7], col='green')
+points(tree_results_bin[tree_results_bin[,1] == 10, 2],
+       tree_results_bin[tree_results_bin[,1] == 10, 7], col='black')
+legend('bottomleft', legend=c("tf-idf", "tf", "binarna"),
+       col=c("red", "green", "black"), pch=c(1, 1, 1), xjust = 0,
+       title="Reprezentacja tekstu")
 
 ############### SVM ###############
 results_svm_tf_idf_gammas <- svm_rbf_gamma_tests(5, data.tfidf.selected_features,
