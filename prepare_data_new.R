@@ -199,40 +199,59 @@ data.bin$text <- NULL
 features_num <- 200
 
 # selekcja 200 atrybutów
-varImportance.tfidf <- attrEval(email_class~., train.tfidf.DF, estimator="Gini")
+varImportance.tfidf <- attrEval(email_class~., data.tfidf, estimator="Gini")
 varImportance.tfidf <- data.frame(varImportance.tfidf, names(varImportance.tfidf))
 names(varImportance.tfidf) <- c("importance", "term")
 varImportance.tfidf.decreasing <- varImportance.tfidf[order(varImportance.tfidf$importance, decreasing = TRUE),]
 varImportance.tfidf.decreasing.columns <- order(varImportance.tfidf$importance, decreasing = TRUE)[1:features_num]
+data.tfidf.selected_features <- data.tfidf[, varImportance.tfidf.decreasing.columns[1:features_num] + 1]
+
+#TODO: remove train & test after tests
 train.tfidf.DF.selected_features <- train.tfidf.DF[, varImportance.tfidf.decreasing.columns[1:features_num] + 1]
+train.tfidf.DF.selected_features$email_class = train.tfidf.DF$email_class
+test.tfidf.DF.selected_features <- test.tfidf.DF[, varImportance.tfidf.decreasing.columns[1:features_num] + 1]
+test.tfidf.DF.selected_features$email_class = test.tfidf.DF$email_class
 
 
-varImportance.tf <- attrEval(email_class~., train.tf.DF, estimator="Gini")
+varImportance.tf <- attrEval(email_class~., data.tf, estimator="Gini")
 varImportance.tf <- data.frame(varImportance.tf, names(varImportance.tf))
 names(varImportance.tf) <- c("importance", "term")
 varImportance.tf.decreasing <- varImportance.tf[order(varImportance.tf$importance, decreasing = TRUE),]
 varImportance.tf.decreasing.columns <- order(varImportance.tf$importance, decreasing = TRUE)[1:features_num]
-train.tf.DF.selected_features <- train.tf.DF[, varImportance.tf.decreasing.columns[1:features_num] + 1]
+data.tf.selected_features <- data.tf[, varImportance.tf.decreasing.columns[1:features_num] + 1]
+#TODO: remove train & test after tests
 
-varImportance.bin <- attrEval(email_class~., train.bin.DF, estimator="Gini")
+train.tf.DF.selected_features <- train.tf.DF[, varImportance.tf.decreasing.columns[1:features_num] + 1]
+train.tf.DF.selected_features$email_class = train.tf.DF$email_class
+test.tf.DF.selected_features <- test.tf.DF[, varImportance.tf.decreasing.columns[1:features_num] + 1]
+test.tf.DF.selected_features$email_class = test.tf.DF$email_class
+
+
+varImportance.bin <- attrEval(email_class~., data.bin, estimator="Gini")
 varImportance.bin <- data.frame(varImportance.bin, names(varImportance.bin))
 names(varImportance.bin) <- c("importance", "term")
 varImportance.bin.decreasing <- varImportance.bin[order(varImportance.bin$importance, decreasing = TRUE),]
 varImportance.bin.decreasing.columns <- order(varImportance.bin$importance, decreasing = TRUE)[1:features_num]
-train.bin.DF.selected_features <- train.bin.DF[, varImportance.bin.decreasing.columns[1:features_num] + 1]
+data.bin.selected_features <- data.bin[, varImportance.bin.decreasing.columns[1:features_num] + 1]
+#TODO: remove train & test after tests
 
+train.bin.DF.selected_features <- train.bin.DF[, varImportance.bin.decreasing.columns[1:features_num] + 1]
+train.bin.DF.selected_features$email_class = train.bin.DF$email_class
+test.bin.DF.selected_features <- test.bin.DF[, varImportance.bin.decreasing.columns[1:features_num] + 1]
+test.bin.DF.selected_features$email_class = test.bin.DF$email_class
 ###############################
 
 # model po selekcji 25 atrybutów z randomForest
-words <- rownames(varImportance.tfidf.decreasing)[1:200]
+words <- rownames(varImportance.tfidf.decreasing)[1:features_num]
 fmla <- as.formula(paste("email_class ~ ", paste(words, collapse = "+")))
 
-email.data.200features <- email.data[, list(words)]
-
-model.tree.25 <- rpart(fmla, data=train.tfidf.DF, minsplit = 3, maxdepth = 15)
+model.tree.25 <- rpart(fmla, data=train.tfidf.DF.selected_features,
+                       minsplit = 5, maxdepth = 5)
 prp(model.tree.25)
-pred.tree.25 <- predict(model.tree.25, test.tfidf.DF, type="email_class")
+pred.tree.25 <- predict(model.tree.25, test.tfidf.DF.selected_features,
+                        type="class")
 mytable <-table(test.tfidf.DF$email_class, pred.tree.25, dnn=c("Obs", "Pred"))
+
 
 #classification_error <- sum(pred.tree.25 != test.tfidf.DF$email_class) / NROW(pred.tree.25)
 
