@@ -85,20 +85,21 @@ rownames(spam.df) <- NULL
 
 # Klasa: 0 - ham, 1 - spam
 
-easy_ham.df$class <- factor("ham")
-easy_ham_2.df$class <- factor("ham")
-hard_ham.df$class <- factor("ham")
-spam.df$class <- factor("spam")
-spam_2.df$class <- factor("spam")
+easy_ham.df$email_class <- factor("ham")
+easy_ham_2.df$email_class <- factor("ham")
+hard_ham.df$email_class <- factor("ham")
+spam.df$email_class <- factor("spam")
+spam_2.df$email_class <- factor("spam")
 
-names(easy_ham.df) <- c("text", "class")
-names(easy_ham_2.df) <- c("text", "class")
-names(hard_ham.df) <- c("text", "class")
-names(spam_2.df) <- c("text", "class")
-names(spam.df) <- c("text", "class")
+names(easy_ham.df) <- c("text", "email_class")
+names(easy_ham_2.df) <- c("text", "email_class")
+names(hard_ham.df) <- c("text", "email_class")
+names(spam_2.df) <- c("text", "email_class")
+names(spam.df) <- c("text", "email_class")
 
 email.data <- rbind(easy_ham.df, hard_ham.df, spam.df,
                     easy_ham_2.df, spam_2.df)
+email.data <- email.data[sample(nrow(email.data)),]
 ## 80% of the sample size
 train_size <- floor(0.80 * nrow(email.data))
 
@@ -106,7 +107,7 @@ train_size <- floor(0.80 * nrow(email.data))
 set.seed(12345)
 train_ind <- sample(seq_len(nrow(email.data)), size = train_size)
 
-names(email.data) <- c("text", "class")
+names(email.data) <- c("text", "email_class")
 
 removeHTMLAttr <- function(x) {
   x <- gsub(pattern = "(<\\w+)[^>]*(>)", "\\1\\2", x) # usuwanie atrybutow w tagach HTML
@@ -195,56 +196,67 @@ test.bin.DF$text = NULL
 data.bin$text <- NULL
 
 ############################################
-# selekcja atrybutów
-varImportance.tfidf <- attrEval(class~., train.tfidf.DF, estimator="Gini")
+features_num <- 200
+
+# selekcja 200 atrybutów
+varImportance.tfidf <- attrEval(email_class~., train.tfidf.DF, estimator="Gini")
 varImportance.tfidf <- data.frame(varImportance.tfidf, names(varImportance.tfidf))
 names(varImportance.tfidf) <- c("importance", "term")
 varImportance.tfidf.decreasing <- varImportance.tfidf[order(varImportance.tfidf$importance, decreasing = TRUE),]
+varImportance.tfidf.decreasing.columns <- order(varImportance.tfidf$importance, decreasing = TRUE)[1:features_num]
+train.tfidf.DF.selected_features <- train.tfidf.DF[, varImportance.tfidf.decreasing.columns[1:features_num] + 1]
 
-varImportance.tf <- attrEval(class~., train.tf.DF, estimator="Gini")
+
+varImportance.tf <- attrEval(email_class~., train.tf.DF, estimator="Gini")
 varImportance.tf <- data.frame(varImportance.tf, names(varImportance.tf))
 names(varImportance.tf) <- c("importance", "term")
 varImportance.tf.decreasing <- varImportance.tf[order(varImportance.tf$importance, decreasing = TRUE),]
+varImportance.tf.decreasing.columns <- order(varImportance.tf$importance, decreasing = TRUE)[1:features_num]
+train.tf.DF.selected_features <- train.tf.DF[, varImportance.tf.decreasing.columns[1:features_num] + 1]
 
-varImportance.bin <- attrEval(class~., train.bin.DF, estimator="Gini")
+varImportance.bin <- attrEval(email_class~., train.bin.DF, estimator="Gini")
 varImportance.bin <- data.frame(varImportance.bin, names(varImportance.bin))
 names(varImportance.bin) <- c("importance", "term")
 varImportance.bin.decreasing <- varImportance.bin[order(varImportance.bin$importance, decreasing = TRUE),]
+varImportance.bin.decreasing.columns <- order(varImportance.bin$importance, decreasing = TRUE)[1:features_num]
+train.tf.DF.selected_features <- train.bin.DF[, varImportance.bin.decreasing.columns[1:features_num] + 1]
 
 ###############################
 
 # model po selekcji 25 atrybutów z randomForest
 words <- rownames(varImportance.tfidf.decreasing)[1:200]
-fmla <- as.formula(paste("class ~ ", paste(words, collapse = "+")))
+fmla <- as.formula(paste("email_class ~ ", paste(words, collapse = "+")))
+
+email.data.200features <- email.data[, list(words)]
 
 model.tree.25 <- rpart(fmla, data=train.tfidf.DF, minsplit = 3, maxdepth = 15)
 prp(model.tree.25)
-pred.tree.25 <- predict(model.tree.25, test.tfidf.DF, type="class")
-mytable <-table(test.tfidf.DF$class, pred.tree.25, dnn=c("Obs", "Pred"))
+pred.tree.25 <- predict(model.tree.25, test.tfidf.DF, type="email_class")
+mytable <-table(test.tfidf.DF$email_class, pred.tree.25, dnn=c("Obs", "Pred"))
 
-#classification_error <- sum(pred.tree.25 != test.tfidf.DF$class) / NROW(pred.tree.25)
+#classification_error <- sum(pred.tree.25 != test.tfidf.DF$email_class) / NROW(pred.tree.25)
 
-model.tree.cp <- rpart(class~., data=train.tfidf.DF, cp = 0.02, minbucket = 30)
-pred.tree.cp <- predict(model.tree.cp, test.tfidf.DF, type = "class")
-table(test.tfidf.DF$class, pred.tree.cp, dnn=c("Obs", "Pred"))
+model.tree.cp <- rpart(email_class~., data=train.tfidf.DF, cp = 0.02, minbucket = 30)
+pred.tree.cp <- predict(model.tree.cp, test.tfidf.DF, type = "email_class")
+table(test.tfidf.DF$email_class, pred.tree.cp, dnn=c("Obs", "Pred"))
 prp(model.tree.cp)
 
 # klasyfikator Bayesa
-model.bayes <- naiveBayes(class~., data = train.tfidf.DF)
-pred.bayes <- predict(model.bayes, test.tfidf.DF, type = "class")
-table(pred = pred.bayes, true = test.tfidf.DF$class, dnn=c("Obs", "Pred"))
+model.bayes <- naiveBayes(email_class~., data = train.tfidf.DF)
+pred.bayes <- predict(model.bayes, test.tfidf.DF, type = "email_class")
+table(pred = pred.bayes, true = test.tfidf.DF$email_class, dnn=c("Obs", "Pred"))
 
 # svm
-model.svm <- svm(class ~ ., data = train.bin.DF)
-pred.svm <- predict(model.svm, test.bin.DF, type = "class")
-table.svm <- table(test.bin.DF$class, pred.svm, dnn=c("Obs", "Pred"))
+model.svm <- svm(email_class ~ ., data = train.bin.DF)
+pred.svm <- predict(model.svm, test.bin.DF, type = "email_class")
+table.svm <- table(test.bin.DF$email_class, pred.svm, dnn=c("Obs", "Pred"))
 #################################
 
 # eksperymenty związane z różną reprezentacją danych
 # tree
-bin.model.tree <- rpart(class~., method="class", data = train.bin.DF)
-bin.pred.tree <- predict(bin.model.tree, test.bin.DF, type="class")
-table(test.bin.DF$class, bin.pred.tree, dnn=c("Obs", "Pred"))
+bin.model.tree <- rpart(email_class~., method="email_class", data = train.bin.DF)
+bin.pred.tree <- predict(bin.model.tree, test.bin.DF, type="email_class")
+table(test.bin.DF$email_class, bin.pred.tree, dnn=c("Obs", "Pred"))
 prp(bin.model.tree)
 
 # ponizej tabela dla TREE (wszystkie argumenty, TF-IDF, )
