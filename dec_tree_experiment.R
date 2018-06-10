@@ -25,7 +25,7 @@ decision_tree_experiment <- function(k, emails, max_depth, min_split) {
     trainData <- emails[folds != test_fold, ]
     
     model.tree <- rpart(fmla, data = trainData, minsplit = min_split, maxdepth = max_depth)
-    prp(model.tree)
+    #prp(model.tree)
     pred.tree <- predict(model.tree, testData, type="class")
     result_table <- table(testData$email_class, pred.tree, dnn=c("Obs", "Pred"))
     classification_error <- sum(pred.tree != testData$email_class) / NROW(pred.tree)
@@ -39,19 +39,20 @@ decision_tree_experiment <- function(k, emails, max_depth, min_split) {
 }
 
 decision_tree_grid_search_tests <- function(k, emails, max_depths, 
-                                                      min_splits) {
+                                            min_splits) {
   results = data.frame(matrix(ncol = 7, nrow = 0))
   colnames(results) <- c('max_depth', 'min_split', 'true_ham', 'false_ham',
                          'true_spam', 'false_spam', 'classification_error')
   
   cores_number <- detectCores() - 1
   cluster <- makeCluster(cores_number, type="FORK")
-  args <- expand.grid(max_depths, min_splits)
-  #args.list <- split(args, seq(nrow(args)))
+  grid <- expand.grid(max_depths, min_splits)
+  grid.list <- split(grid, seq(nrow(grid)))
+
   results <- mcmapply(function(max_depth, min_split) {return(decision_tree_experiment(k, emails,
                                                                                       max_depth, min_split
                                                                                       ))},
-                      as.list(args[, 1]), as.list(args[, 2]), mc.cores = cores_number)
+                      as.list(grid[, 1]), as.list(grid[, 2]), mc.cores = cores_number)
   results <- data.frame(t(results))
   #plot(results[,1], xlab = 'Max depth', result[, 4], ylab = 'Error')
   return(results)

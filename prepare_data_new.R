@@ -31,6 +31,11 @@ if (! "randomForest" %in% row.names(installed.packages()))
   install.packages("randomForest")
 library(randomForest)
 
+source("naive_bayes_experiments.R")
+source("dec_tree_experiment.R")
+source("svm_experiments.R")
+
+
 
 spam.dir <- "./spamassasin/"
 
@@ -196,13 +201,20 @@ test.bin.DF$text = NULL
 data.bin$text <- NULL
 
 ############################################
-features_num <- 200
 
-# selekcja 200 atrybutów
+# wybór liczby atrybutów
 varImportance.tfidf <- attrEval(email_class~., data.tfidf, estimator="Gini")
 varImportance.tfidf <- data.frame(varImportance.tfidf, names(varImportance.tfidf))
 names(varImportance.tfidf) <- c("importance", "term")
 varImportance.tfidf.decreasing <- varImportance.tfidf[order(varImportance.tfidf$importance, decreasing = TRUE),]
+
+
+plot(1:nrow(varImportance.tfidf.decreasing),
+     varImportance.tfidf.decreasing[, 1],
+     xlab='Numery cech, uporządkowanych według istotności malejąco',
+     ylab='Istotność')
+features_num <- 200
+
 varImportance.tfidf.decreasing.columns <- order(varImportance.tfidf$importance, decreasing = TRUE)[1:features_num]
 data.tfidf.selected_features <- data.tfidf[, varImportance.tfidf.decreasing.columns[1:features_num] + 1]
 data.tfidf.selected_features$email_class <- data.tfidf$email_class
@@ -267,7 +279,32 @@ legend('center', legend=c("tf-idf", "tf", "binarna"),
       col=c("red", "green", "black"), pch=c(1, 1, 1), xjust = 0,
       title="Reprezentacja tekstu")
 
+##############################3
+#TESTY DRZEW DECYZYJNYCH
+tree_results_tf_idf <- decision_tree_grid_search_tests(5, data.tfidf.selected_features, 
+                                                       c(1, 5, 10, 15), 
+                                                       c(1, 5, 10, 25, 50))
+tree_results_tf <- decision_tree_grid_search_tests(5, data.tf.selected_features, 
+                                                       c(1, 5, 10, 15), 
+                                                       c(1, 5, 10, 25, 50))
+tree_results_bin <- decision_tree_grid_search_tests(5, data.bin.selected_features, 
+                                                       c(1, 5, 10, 15), 
+                                                       c(1, 5, 10, 25, 50))
 
+
+############### SVM ###############
+results_svm_tf_idf_gammas <- svm_rbf_gamma_tests(2, data.tfidf.selected_features,
+                                                 c(0.001, 0.005, 0.01, 0.025, 0.05))
+
+results_svm_tf_gammas <- svm_rbf_gamma_tests(2, data.tf.selected_features,
+                                                 c(0.001, 0.005, 0.01, 0.025, 0.05))
+
+results_svm_bin_gammas <- svm_rbf_gamma_tests(2, data.bin.selected_features,
+                                                 c(0.001, 0.005, 0.01, 0.025, 0.05))
+
+
+results_svm_tf_idf_polynomial <- svm_polynomial_degree_tests(2, data.tfidf.selected_features,
+                                           c(1, 2, 3))
 
 
 
