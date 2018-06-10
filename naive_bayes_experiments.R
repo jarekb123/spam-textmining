@@ -1,6 +1,12 @@
 if (! "e1071" %in% row.names(installed.packages()))
   install.packages("e1071")
 library(e1071)
+if (! "parallel" %in% row.names(installed.packages()))
+  install.packages("parallel")
+library(parallel)
+if (! "dismo" %in% row.names(installed.packages()))
+  install.packages("dismo")
+library(dismo)
 
 bayes_cost_sensitive_pred <- function(bayes_model, emails, ham_as_spam_cost, spam_as_ham_cost) {
   pred.bayes <- predict(bayes_model, emails, type = "raw")

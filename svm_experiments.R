@@ -1,6 +1,12 @@
 if (! "e1071" %in% row.names(installed.packages()))
   install.packages("e1071")
 library(e1071)
+if (! "parallel" %in% row.names(installed.packages()))
+  install.packages("parallel")
+library(parallel)
+if (! "dismo" %in% row.names(installed.packages()))
+  install.packages("dismo")
+library(dismo)
 
 # one of rbf_gamma, polynomial_degree will be used, depending on the kernel
 svm_experiment <- function(k, emails, kernel, rbf_gamma, polynomial_degree,

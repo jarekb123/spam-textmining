@@ -244,7 +244,47 @@ train.bin.DF.selected_features$email_class = train.bin.DF$email_class
 test.bin.DF.selected_features <- test.bin.DF[, varImportance.bin.decreasing.columns[1:features_num] + 1]
 test.bin.DF.selected_features$email_class = test.bin.DF$email_class
 ###############################
+# testy naiwnego klasyfikatora Bayesa
+bayes_results_tf_idf <- naive_bayes_misclassification_costs_tests(5, 
+                                                                  data.tfidf.selected_features, 
+                                                                  c(0.01, 0.1, 1, 10, 100))
+bayes_results_tf <- naive_bayes_misclassification_costs_tests(5, 
+                                                              data.tf.selected_features, 
+                                                              c(0.01, 0.1, 1, 10, 100))
+bayes_results_bin <- naive_bayes_misclassification_costs_tests(5, 
+                                                              data.bin.selected_features, 
+                                                              c(0.01, 0.1, 1, 10, 100))
+bayes_y_range <- range(bayes_results_bin[, 8], 
+                       bayes_results_tf[, 8],
+                       bayes_results_tf_idf[, 8])
+plot(bayes_results_tf_idf[, 1], bayes_results_tf_idf[, 8], log='x', col='red', 
+     ylim=bayes_y_range, ylab = 'Błąd klasyfikacji',
+     xlab=expression(frac("Koszt błędnej klasyfikacji spamu", "Koszt błędnej klasyfikacji pożądanej korespondencji")),
+     mgp = c(3, 0.1, 0))
+points(bayes_results_tf[, 1], bayes_results_tf[, 8], col='green')
+points(bayes_results_bin[, 1], bayes_results_bin[, 8], col='black')
+legend('center', legend=c("tf-idf", "tf", "binarna"),
+      col=c("red", "green", "black"), pch=c(1, 1, 1), xjust = 0,
+      title="Reprezentacja tekstu")
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#############################################
 # model po selekcji 25 atrybutów z randomForest
 words <- rownames(varImportance.tfidf.decreasing)[1:features_num]
 fmla <- as.formula(paste("email_class ~ ", paste(words, collapse = "+")))

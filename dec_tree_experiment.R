@@ -4,6 +4,9 @@ library(dismo)
 if (! "parallel" %in% row.names(installed.packages()))
   install.packages("parallel")
 library(parallel)
+if (! "rpart" %in% row.names(installed.packages()))
+  install.packages("rpart")
+library(rpart)
 
 
 decision_tree_experiment <- function(k, emails, max_depth, min_split) {
