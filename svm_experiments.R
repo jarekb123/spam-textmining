@@ -70,3 +70,14 @@ svm_polynomial_degree_tests <- function(k, emails, degrees) {
   plot(results[,2], xlab = 'Polynomial degree', results[, 8], ylab = 'Error')
   return(results)
 }
+
+svm_cost_rbf_tests <- function(k, emails, gamma, costs) {
+  cores_number <- detectCores() - 1
+  cluster <- makeCluster(cores_number, type="FORK")
+  results <- parLapply(cluster, costs, function(cost) 
+  {return(svm_experiment(k, emails, "radial", gamma, -1,
+                         cost))})
+  results <- do.call("rbind", results)
+  #plot(results[,2], xlab = 'Polynomial degree', results[, 8], ylab = 'Error')
+  return(results)
+}

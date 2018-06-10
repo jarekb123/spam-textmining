@@ -293,24 +293,33 @@ tree_results_bin <- decision_tree_grid_search_tests(5, data.bin.selected_feature
 
 
 ############### SVM ###############
-results_svm_tf_idf_gammas <- svm_rbf_gamma_tests(2, data.tfidf.selected_features,
+results_svm_tf_idf_gammas <- svm_rbf_gamma_tests(5, data.tfidf.selected_features,
                                                  c(0.001, 0.005, 0.01, 0.025, 0.05))
 
-results_svm_tf_gammas <- svm_rbf_gamma_tests(2, data.tf.selected_features,
+results_svm_tf_gammas <- svm_rbf_gamma_tests(5, data.tf.selected_features,
                                                  c(0.001, 0.005, 0.01, 0.025, 0.05))
 
-results_svm_bin_gammas <- svm_rbf_gamma_tests(2, data.bin.selected_features,
+results_svm_bin_gammas <- svm_rbf_gamma_tests(5, data.bin.selected_features,
                                                  c(0.001, 0.005, 0.01, 0.025, 0.05))
 
 
-results_svm_tf_idf_polynomial <- svm_polynomial_degree_tests(2, data.tfidf.selected_features,
+results_svm_tf_idf_polynomial <- svm_polynomial_degree_tests(5, data.tfidf.selected_features,
                                            c(1, 2, 3))
 
+results_svm_tf_polynomial <- svm_polynomial_degree_tests(5, data.tf.selected_features,
+                                                             c(1, 2, 3))
 
+results_svm_bin_polynomial <- svm_polynomial_degree_tests(5, data.bin.selected_features,
+                                                             c(1, 2, 3))
 
+results_svm_tf_idf_rbf_cost <- svm_cost_rbf_tests(5, data.tfidf.selected_features, 0.005,
+                                              c(0.1, 1, 10, 100))
 
+results_svm_tf_rbf_cost <- svm_cost_rbf_tests(5, data.tf.selected_features, 0.005,
+                                                  c(0.1, 1, 10, 100))
 
-
+results_svm_bin_rbf_cost <- svm_cost_rbf_tests(5, data.bin.selected_features, 0.005,
+                                                  c(0.1, 1, 10, 100))
 
 
 
