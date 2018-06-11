@@ -145,6 +145,7 @@ dtm.tfidf <- create_matrix(email.data$text,
                            removeSparseTerms = 0.99, 
                            weighting = weightTfIdf
 )
+
 data.tfidf <- cbind(email.data, as.matrix(dtm.tfidf))
 names(data.tfidf) <- make.names(names(data.tfidf)) 
 
@@ -266,6 +267,15 @@ bayes_results_tf <- naive_bayes_misclassification_costs_tests(5,
 bayes_results_bin <- naive_bayes_misclassification_costs_tests(5, 
                                                               data.bin.selected_features, 
                                                               c(0.01, 0.1, 1, 10, 100))
+bayes_results_tf_idf2 <- naive_bayes_misclassification_costs_tests(5, 
+                                                                  data.tfidf.selected_features, 
+                                                                  c(0.01, 0.1, 1, 10, 100))
+bayes_results_tf2 <- naive_bayes_misclassification_costs_tests(5, 
+                                                              data.tf.selected_features, 
+                                                              c(0.01, 0.1, 1, 10, 100))
+
+
+
 bayes_y_range <- range(bayes_results_bin[, 8] * 100, 
                        bayes_results_tf[, 8] * 100,
                        bayes_results_tf_idf[, 8] * 100)
@@ -282,13 +292,13 @@ legend('center', legend=c("tf-idf", "tf", "binarna"),
 ##############################3
 #TESTY DRZEW DECYZYJNYCH
 tree_results_tf_idf <- decision_tree_grid_search_tests(5, data.tfidf.selected_features, 
-                                                       c(1, 5, 10, 15), 
+                                                       c(1, 3, 5, 10, 15, 20, 25, 30), 
                                                        c(1, 5, 10, 25, 50))
 tree_results_tf <- decision_tree_grid_search_tests(5, data.tf.selected_features, 
-                                                       c(1, 5, 10, 15), 
+                                                       c(1, 3, 5, 10, 15, 20, 25, 30), 
                                                        c(1, 5, 10, 25, 50))
 tree_results_bin <- decision_tree_grid_search_tests(5, data.bin.selected_features, 
-                                                       c(1, 5, 10, 15), 
+                                                       c(1, 3, 5, 10, 15, 20, 25, 30), 
                                                        c(1, 5, 10, 25, 50))
 
 plot(tree_results_tf_idf[tree_results_tf_idf[,2] == 5, 1],
