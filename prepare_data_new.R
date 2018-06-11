@@ -300,12 +300,16 @@ tree_results_tf <- decision_tree_grid_search_tests(5, data.tf.selected_features,
 tree_results_bin <- decision_tree_grid_search_tests(5, data.bin.selected_features, 
                                                        c(1, 3, 5, 10, 15, 20, 25, 30), 
                                                        c(1, 5, 10, 25, 50))
+tree_results_tf_idf_degenerated <- decision_tree_grid_search_tests(5, data.tfidf.selected_features, 
+                                                       c(30), 
+                                                       c(1))
+
 
 plot(tree_results_tf_idf[tree_results_tf_idf[,2] == 5, 1],
      tree_results_tf_idf[tree_results_tf_idf[,2] == 5, 7] * 100,
       col='red', 
-     ylim=range(7.5, 8.5),
-     xlim=range(4, 15),
+     ylim=range(7.5, 11.5),
+     xlim=range(3, 30),
      ylab = 'Błąd klasyfikacji [%]',
      xlab="Maksymalna głębokość drzewa",
      mgp = c(3, 0.1, 0))
