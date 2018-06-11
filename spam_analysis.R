@@ -108,8 +108,8 @@ isContainingHTMLTags <- function(x) {
 }
 
 for(i in 1: nrow(email.data)) {
-  email.data$text[i] <- removeHTMLClosingTag(removeHTMLAttr(email.data$text[i]))
-  email.data$isContainingHTML[i] <- isContainingHTMLTags(email.data$text[i])
+  email.data$text[i] <- removeHTMLClosingTag(removeHTMLAttr(train.test$text[i]))
+  email.data$isContainingHTML[i] <- isContainingHTMLTags(train.test$text[i])
 }
 
 ##############################################

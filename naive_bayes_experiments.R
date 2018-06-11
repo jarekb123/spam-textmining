@@ -11,7 +11,7 @@ library(dismo)
 bayes_cost_sensitive_pred <- function(bayes_model, emails, ham_as_spam_cost, spam_as_ham_cost) {
   pred.bayes <- predict(bayes_model, emails, type = "raw")
   
-  # P(ham|x) > ham_threshold_coef * P(spam|x) -> classify as ham
+  # P(ham|x) > ham_threshold_coef * P(spam|x) -> klasyfikuj jako ham
   ham_threshold_coef <- spam_as_ham_cost / ham_as_spam_cost
   result.pred  <- ifelse (pred.bayes[, 1] > pred.bayes[, 2] * ham_threshold_coef, "ham", "spam")
   

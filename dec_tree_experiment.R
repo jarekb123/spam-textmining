@@ -12,7 +12,6 @@ library(rpart)
 decision_tree_experiment <- function(k, emails, max_depth, min_split) {
   words <- colnames(emails)
   fmla <- as.formula(paste("email_class ~ ", paste(words, collapse = "+")))
-  #########
   folds <- kfold(emails, k)
   
   result = data.frame(matrix(ncol = 7, nrow = 0))
@@ -54,7 +53,6 @@ decision_tree_grid_search_tests <- function(k, emails, max_depths,
                                                                                       ))},
                       as.list(grid[, 1]), as.list(grid[, 2]), mc.cores = cores_number)
   results <- data.frame(t(results))
-  #plot(results[,1], xlab = 'Max depth', result[, 4], ylab = 'Error')
   return(results)
 }
 
@@ -82,7 +80,6 @@ decision_tree_min_splits_tests <- function(k, emails, max_depth,
   
   cores_number <- detectCores() - 1
   cluster <- makeCluster(cores_number, type="FORK")
-  #clusterExport(cl=cl, varlist=c("features_number"))
   results <- parLapply(cluster, min_splits, function(min_split) {return(decision_tree_experiment(k, emails,
                                                                                                  max_depth, min_split))})
   results <- do.call("rbind", results)

@@ -8,7 +8,7 @@ if (! "dismo" %in% row.names(installed.packages()))
   install.packages("dismo")
 library(dismo)
 
-# one of rbf_gamma, polynomial_degree will be used, depending on the kernel
+# w zależności od wybranego kernela, zostanie użyta rbf_gamma, albo polynomial_degree
 svm_experiment <- function(k, emails, kernel, rbf_gamma, polynomial_degree,
                            cost) {
   folds <- kfold(emails, k)
@@ -23,7 +23,7 @@ svm_experiment <- function(k, emails, kernel, rbf_gamma, polynomial_degree,
     testData <- emails[folds == test_fold, ]
     trainData <- emails[folds != test_fold, ]
     
-    # cost = 1 by default (e1071 doc)
+    # cost = 1 domyślnie
     if (kernel == 'linear') {
       model.svm <- svm(email_class ~ ., data = trainData, kernel = 'linear', cost = cost)
     } else if (kernel == 'radial') {
@@ -56,7 +56,6 @@ svm_rbf_gamma_tests <- function(k, emails, gammas) {
     {return(svm_experiment(k, emails, "radial", rbf_gamma, 1,
                            1))})
   results <- do.call("rbind", results)
-  plot(results[,1], xlab = 'RBF gamma', results[, 8], ylab = 'Error')
   return(results)
 }
 
@@ -67,7 +66,6 @@ svm_polynomial_degree_tests <- function(k, emails, degrees) {
   {return(svm_experiment(k, emails, "polynomial", 0, degree,
                          1))})
   results <- do.call("rbind", results)
-  plot(results[,2], xlab = 'Polynomial degree', results[, 8], ylab = 'Error')
   return(results)
 }
 
@@ -78,6 +76,5 @@ svm_cost_rbf_tests <- function(k, emails, gamma, costs) {
   {return(svm_experiment(k, emails, "radial", gamma, -1,
                          cost))})
   results <- do.call("rbind", results)
-  #plot(results[,2], xlab = 'Polynomial degree', results[, 8], ylab = 'Error')
   return(results)
 }
